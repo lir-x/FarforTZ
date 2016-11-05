@@ -1,0 +1,6 @@
+framework module Pods_Farfor {
+  umbrella header "Pods-Farfor-umbrella.h"
+
+  export *
+  module * { export * }
+}

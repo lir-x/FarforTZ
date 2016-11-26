@@ -139,7 +139,7 @@ class ContactsViewController: UIViewController, MKMapViewDelegate, CLLocationMan
             geocoder = CLGeocoder()
             geocoder.geocodeAddressString(address) { (placemarks, error) in
                 if error != nil {
-                    print (error?.localizedDescription)
+                    print (error?.localizedDescription ?? "error")
                 } else {
                     if let placemarks = placemarks {
                         if placemarks.count > 0 {
@@ -245,13 +245,19 @@ class CategoryViewController: UICollectionViewController {
         Alamofire.request(stringURL).responseData { (response) in
             if let data = response.data {
                 let manager = DataManager.sharedInstance
+                if manager.read() == nil {
+                    self.updateMenu(data: data)
+                    manager.save(data: data)
+                }
                 if let oldData = manager.read() {
+                
                     if oldData != data {
-                        DataManager.sharedInstance.save(data: data)
+                        manager.save(data: data)
                         self.updateMenu(data: data)
-//                        let alert = UIAlertController(title: "Oops!", message:"menu updated", preferredStyle: .alert)
-//                        alert.addAction(UIAlertAction(title: "Okay.", style: .default) { _ in })
-//                        self.present(alert, animated: true){}
+                        let alert = UIAlertController(title: "Oops!", message:"menu updated", preferredStyle: .alert)
+                        alert.addAction(UIAlertAction(title: "Okay.", style: .default) { _ in })
+                        self.present(alert, animated: true){}
+                    
                     }
                 }
             }
@@ -449,6 +455,7 @@ class Offer {
         self.price = price
     }
 }
+
 class DataManager {
     
     static let sharedInstance : DataManager = {
@@ -530,8 +537,6 @@ class Parser {
         
         for item in categories {
             
-            
-            
             guard let name = item.element?.text else {
                 print("error in xml cat name")
                 return nil
@@ -545,15 +550,11 @@ class Parser {
                 if off.categoryId == categoryID {
                     temp.append(off)
                 }
-                
             }
-            
             resultArray.append(Category(name: name,
                                         categoryID: categoryID,
                                         offers: temp))
         }
-
-        
      return resultArray
     }
     
